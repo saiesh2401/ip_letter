@@ -50,7 +50,8 @@ with gen_tab:
     st.write("Upload the **Google Subscriber Info HTML** file to generate legal requests for Jio, Airtel, and VI.")
     
     # Initialize Session State
-    if 'processor' not in st.session_state:
+    # Check if processor exists and is up-to-date (has new methods)
+    if 'processor' not in st.session_state or not hasattr(st.session_state.processor, 'process_airtel_reply'):
         st.session_state.processor = ISPProcessor(output_dir="Generated_Letters", cache_file="isp_cache.json")
     if 'results' not in st.session_state:
         st.session_state.results = None

@@ -6,3 +6,9 @@ dist/
 build/
 *.spec
 isp_cache.json
+temp_*
+*_Reply/
+*.7z
+*.zip
+.venv/
+venv/
