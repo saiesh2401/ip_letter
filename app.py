@@ -7,7 +7,35 @@ from backend import ISPProcessor
 # Set page config
 st.set_page_config(page_title="IFSO ISP Tool", page_icon="🚔", layout="wide")
 
+# --- AUTHENTICATION ---
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+def check_login():
+    st.title("Login Required")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    if st.button("Login"):
+        if username == "vikram@delhi.com" and password == "honeysingh@1":
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Invalid Username or Password")
+
+if not st.session_state.authenticated:
+    check_login()
+    st.stop()
+# ----------------------
+
 st.title("🚔 IFSO ISP Letter Generator")
+
+# Logout Button
+with st.sidebar:
+    st.write(f"Logged in as: **vikram@delhi.com**")
+    if st.button("Logout"):
+        st.session_state.authenticated = False
+        st.rerun()
+
 st.markdown("Upload the **Google Subscriber Info HTML** file to generate legal requests for Jio, Airtel, and VI.")
 
 # Initialize Session State
