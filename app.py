@@ -40,7 +40,7 @@ with st.sidebar:
 st.markdown("Automated tool for IFSO Special Cell.")
 
 # Tabs for Main Functionalities
-gen_tab, reply_tab = st.tabs(["🚀 Generator", "🔍 Reply Analyzer"])
+gen_tab, reply_tab, bank_tab = st.tabs(["🚀 Generator", "🔍 Reply Analyzer", "🏦 Bank Letters"])
 
 # ==========================================
 # TAB 1: GENERATOR (HTML -> Letters)
@@ -445,3 +445,193 @@ with reply_tab:
                     if misses:
                         with st.expander("See Missed Files"):
                             st.write(misses)
+
+# ==========================================
+# TAB 3: BANK LETTERS (Excel -> Bank Letters)
+# ==========================================
+with bank_tab:
+    st.header("🏦 Bank Transaction Letter Generator")
+    st.info("Upload the transaction Excel file to generate bank-specific letters for different transaction types.")
+    
+    # Initialize Bank Letter Processor
+    if 'bank_processor' not in st.session_state:
+        from backend import BankLetterProcessor
+        st.session_state.bank_processor = BankLetterProcessor(output_dir="Generated_Letters")
+    
+    # File Upload
+    bank_excel_file = st.file_uploader("Upload Transaction Excel File (sample.xlsx)", type=['xlsx'], key="bank_excel_upload")
+    
+    if bank_excel_file is not None:
+        # Save uploaded file
+        temp_excel_path = "temp_bank_transactions.xlsx"
+        with open(temp_excel_path, "wb") as f:
+            f.write(bank_excel_file.getbuffer())
+        
+        st.success(f"Loaded: {bank_excel_file.name}")
+        
+        # Parse Excel
+        processor = st.session_state.bank_processor
+        sheets, error = processor.parse_bank_excel(temp_excel_path)
+        
+        if error:
+            st.error(error)
+        else:
+            st.session_state.bank_sheets = sheets
+            
+            # Display sheet information
+            st.subheader("📊 Transaction Summary")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Money Transfers", len(sheets['Money Transfer to']))
+            with col2:
+                st.metric("On Hold", len(sheets['Transaction put on hold']))
+            with col3:
+                st.metric("ATM Withdrawals", len(sheets['Withdrawal through ATM']))
+            with col4:
+                st.metric("Cheque Withdrawals", len(sheets['Cash Withdrawal through Cheque']))
+            
+            # Layer Detection for Sheet 1
+            max_layers = processor.get_available_layers(sheets['Money Transfer to'])
+            
+            st.write("---")
+            st.subheader("⚙️ Configuration")
+            
+            # Sheet Selection
+            st.write("**Select Transaction Types to Process:**")
+            col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+            
+            with col_s1:
+                process_sheet1 = st.checkbox("Money Transfer", value=True, key="proc_s1")
+            with col_s2:
+                process_sheet2 = st.checkbox("On Hold", value=True, key="proc_s2")
+            with col_s3:
+                process_sheet3 = st.checkbox("ATM", value=True, key="proc_s3")
+            with col_s4:
+                process_sheet4 = st.checkbox("Cheque", value=True, key="proc_s4")
+            
+            # Layer Selection for Sheet 1
+            if process_sheet1:
+                st.write("---")
+                st.write("**Money Transfer Layer Selection:**")
+                
+                if max_layers > 0:
+                    st.info(f"📌 Transactions exist for **{max_layers} layer(s)**. Select how many layers to include in the letters.")
+                    
+                    num_layers = st.number_input(
+                        f"Select number of layers (1 to {max_layers})",
+                        min_value=1,
+                        max_value=max_layers,
+                        value=min(2, max_layers),
+                        step=1,
+                        key="layer_select"
+                    )
+                else:
+                    st.warning("No layer information found in Money Transfer sheet.")
+                    num_layers = 1
+            
+            # Generate Button
+            st.write("---")
+            if st.button("🚀 Generate Bank Letters", type="primary"):
+                all_generated_files = []
+                
+                with st.spinner("Generating bank letters..."):
+                    progress_bar = st.progress(0)
+                    total_tasks = sum([process_sheet1, process_sheet2, process_sheet3, process_sheet4])
+                    current_task = 0
+                    
+                    try:
+                        # Sheet 1: Money Transfer
+                        if process_sheet1:
+                            st.write("📝 Processing Money Transfer transactions...")
+                            files = processor.generate_layerwise_letters(
+                                sheets['Money Transfer to'], 
+                                num_layers
+                            )
+                            all_generated_files.extend(files)
+                            current_task += 1
+                            progress_bar.progress(current_task / total_tasks)
+                        
+                        # Sheet 2: On Hold
+                        if process_sheet2:
+                            st.write("📝 Processing Transaction On Hold...")
+                            files = processor.generate_money_release_letters(
+                                sheets['Transaction put on hold']
+                            )
+                            all_generated_files.extend(files)
+                            current_task += 1
+                            progress_bar.progress(current_task / total_tasks)
+                        
+                        # Sheet 3: ATM
+                        if process_sheet3:
+                            st.write("📝 Processing ATM Withdrawals...")
+                            files = processor.generate_atm_letters(
+                                sheets['Withdrawal through ATM']
+                            )
+                            all_generated_files.extend(files)
+                            current_task += 1
+                            progress_bar.progress(current_task / total_tasks)
+                        
+                        # Sheet 4: Cheque
+                        if process_sheet4:
+                            st.write("📝 Processing Cheque Withdrawals...")
+                            files = processor.generate_cheque_letters(
+                                sheets['Cash Withdrawal through Cheque']
+                            )
+                            all_generated_files.extend(files)
+                            current_task += 1
+                            progress_bar.progress(current_task / total_tasks)
+                        
+                        # Store results
+                        st.session_state.bank_generated_files = all_generated_files
+                        
+                        st.balloons()
+                        st.success(f"✅ Successfully generated {len(all_generated_files)} bank letters!")
+                        
+                    except Exception as e:
+                        st.error(f"Error generating letters: {e}")
+                        st.exception(e)
+            
+            # Display Results
+            if 'bank_generated_files' in st.session_state and st.session_state.bank_generated_files:
+                st.write("---")
+                st.subheader("📥 Generated Letters")
+                
+                # Group by transaction type
+                files_by_type = {}
+                for file_info in st.session_state.bank_generated_files:
+                    txn_type = file_info['type']
+                    if txn_type not in files_by_type:
+                        files_by_type[txn_type] = []
+                    files_by_type[txn_type].append(file_info)
+                
+                # Display in tabs by transaction type
+                if len(files_by_type) > 0:
+                    type_tabs = st.tabs(list(files_by_type.keys()))
+                    
+                    for idx, (txn_type, tab) in enumerate(zip(files_by_type.keys(), type_tabs)):
+                        with tab:
+                            st.write(f"**{txn_type} Letters**")
+                            
+                            # Display each bank's letter
+                            for file_info in files_by_type[txn_type]:
+                                col_info, col_download = st.columns([3, 1])
+                                
+                                with col_info:
+                                    st.write(f"🏦 **{file_info['bank']}**")
+                                    st.caption(f"Transactions: {file_info['count']}")
+                                
+                                with col_download:
+                                    if os.path.exists(file_info['path']):
+                                        with open(file_info['path'], "rb") as f:
+                                            file_name = os.path.basename(file_info['path'])
+                                            st.download_button(
+                                                label="📥 Download",
+                                                data=f,
+                                                file_name=file_name,
+                                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                                key=f"dl_bank_{idx}_{file_name}"
+                                            )
+                                
+                                st.write("---")
