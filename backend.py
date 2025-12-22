@@ -820,10 +820,15 @@ class BankLetterProcessor:
         try:
             doc = Document(template_path)
             
-            # Replace bank name in the document
+            # Replace bank name in the document (address section and anywhere else)
             for paragraph in doc.paragraphs:
+                # Replace the hardcoded bank name in address section
                 if 'IDFC First Bank' in paragraph.text:
                     paragraph.text = paragraph.text.replace('IDFC First Bank', bank_name)
+                # Also check for runs within paragraphs for better replacement
+                for run in paragraph.runs:
+                    if 'IDFC First Bank' in run.text:
+                        run.text = run.text.replace('IDFC First Bank', bank_name)
             
             # Find and populate the table
             if doc.tables:
@@ -867,12 +872,17 @@ class BankLetterProcessor:
         try:
             doc = Document(template_path)
             
-            # Replace bank name in the document
+            # Replace bank name in the document (address section and anywhere else)
             for paragraph in doc.paragraphs:
-                # Find and replace bank name placeholder or existing bank name
-                if paragraph.text:
-                    paragraph.text = paragraph.text.replace('{BANK_NAME}', bank_name)
+                # Replace hardcoded bank names
+                if 'IDFC Bank' in paragraph.text or 'IDFC First Bank' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('IDFC Bank', bank_name)
                     paragraph.text = paragraph.text.replace('IDFC First Bank', bank_name)
+                # Also check runs
+                for run in paragraph.runs:
+                    if 'IDFC Bank' in run.text or 'IDFC First Bank' in run.text:
+                        run.text = run.text.replace('IDFC Bank', bank_name)
+                        run.text = run.text.replace('IDFC First Bank', bank_name)
             
             # Find and populate the table
             if doc.tables:
@@ -921,11 +931,14 @@ class BankLetterProcessor:
         try:
             doc = Document(template_path)
             
-            # Replace bank name
+            # Replace bank name in the document (address section and anywhere else)
             for paragraph in doc.paragraphs:
-                if paragraph.text:
-                    paragraph.text = paragraph.text.replace('{BANK_NAME}', bank_name)
+                if 'Bandhan Bank' in paragraph.text:
                     paragraph.text = paragraph.text.replace('Bandhan Bank', bank_name)
+                # Also check runs
+                for run in paragraph.runs:
+                    if 'Bandhan Bank' in run.text:
+                        run.text = run.text.replace('Bandhan Bank', bank_name)
             
             # Find and populate the table
             if doc.tables:
@@ -979,11 +992,14 @@ class BankLetterProcessor:
         try:
             doc = Document(template_path)
             
-            # Replace bank name
+            # Replace bank name in the document (address section and anywhere else)
             for paragraph in doc.paragraphs:
-                if paragraph.text:
-                    paragraph.text = paragraph.text.replace('{BANK_NAME}', bank_name)
+                if 'Punjab National Bank' in paragraph.text:
                     paragraph.text = paragraph.text.replace('Punjab National Bank', bank_name)
+                # Also check runs
+                for run in paragraph.runs:
+                    if 'Punjab National Bank' in run.text:
+                        run.text = run.text.replace('Punjab National Bank', bank_name)
             
             # Find and populate the table
             if doc.tables:
