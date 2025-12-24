@@ -574,26 +574,42 @@ with bank_tab:
                 help="This will appear in the body of all generated bank letters"
             )
             
+            
             # Custom Release Order Details (for money release letters)
             st.write("**Release Order Details (for Money Release Letters):**")
-            default_release_order = """The Hon'ble Court of Sh. Yashdeep Chahal, Judicial Magisrate-01, Patiala House Courts, New Delhi has directed to the concerned bank manager to release the amount, whichever is available/lying in the beneficiary bank account in favor of the complainant to the below mentioned account. (order attached herewith)
-Sh. Akhilesh Dutt
+            
+            # Court Order - will be justified/centered in letter
+            st.write("*Court Order (will be justified in letter):*")
+            default_court_order = "The Hon'ble Court of Sh. Yashdeep Chahal, Judicial Magisrate-01, Patiala House Courts, New Delhi has directed to the concerned bank manager to release the amount, whichever is available/lying in the beneficiary bank account in favor of the complainant to the below mentioned account. (order attached herewith)"
+            
+            custom_court_order = st.text_area(
+                "Enter court order details",
+                value=default_court_order,
+                height=100,
+                key="custom_court_order",
+                help="This will be justified/centered in the letter"
+            )
+            
+            # Beneficiary Account - will be left-aligned in letter
+            st.write("*Beneficiary Account Details (will be left-aligned in letter):*")
+            default_beneficiary = """Sh. Akhilesh Dutt
 Bank Account No. 629301106296  (ICICI Bank)
 (IFSC Code : ICIC0006293) 
 Branch : Rajouri Garden, New Delhi"""
             
-            custom_release_order = st.text_area(
-                "Enter court order and beneficiary account details",
-                value=default_release_order,
-                height=150,
-                key="custom_release_order",
-                help="This will appear in money release letters (Sheet 2: Transaction On Hold)"
+            custom_beneficiary = st.text_area(
+                "Enter beneficiary account details",
+                value=default_beneficiary,
+                height=100,
+                key="custom_beneficiary",
+                help="This will be left-aligned in the letter"
             )
             
             # Store in session state for use in letter generation
             st.session_state.letter_subject = custom_subject
             st.session_state.letter_message = custom_message
-            st.session_state.letter_release_order = custom_release_order
+            st.session_state.letter_court_order = custom_court_order
+            st.session_state.letter_beneficiary = custom_beneficiary
             
             st.write("---")
             st.subheader("⚙️ Configuration")
@@ -664,7 +680,8 @@ Branch : Rajouri Garden, New Delhi"""
                                 sheets['Transaction put on hold'],
                                 custom_subject=st.session_state.get('letter_subject'),
                                 custom_message=st.session_state.get('letter_message'),
-                                custom_release_order=st.session_state.get('letter_release_order')
+                                custom_court_order=st.session_state.get('letter_court_order'),
+                                custom_beneficiary=st.session_state.get('letter_beneficiary')
                             )
                             all_generated_files.extend(files)
                             current_task += 1

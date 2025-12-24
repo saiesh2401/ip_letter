@@ -731,7 +731,7 @@ class BankLetterProcessor:
         
         return generated_files
     
-    def generate_money_release_letters(self, df, output_subdir="Sheet2_OnHold", custom_subject=None, custom_message=None, custom_release_order=None):
+    def generate_money_release_letters(self, df, output_subdir="Sheet2_OnHold", custom_subject=None, custom_message=None, custom_court_order=None, custom_beneficiary=None):
         """
         Generate bank-wise letters for Transaction on Hold (Sheet 2).
         Returns: list of generated file paths
@@ -759,7 +759,8 @@ class BankLetterProcessor:
                 output_path,
                 custom_subject,
                 custom_message,
-                custom_release_order
+                custom_court_order,
+                custom_beneficiary
             )
             
             if success:
@@ -946,7 +947,7 @@ class BankLetterProcessor:
             print(f"Error filling layerwise template: {e}")
             return False
     
-    def _fill_money_release_template(self, template_path, bank_name, transactions, output_path, custom_subject=None, custom_message=None, custom_release_order=None):
+    def _fill_money_release_template(self, template_path, bank_name, transactions, output_path, custom_subject=None, custom_message=None, custom_court_order=None, custom_beneficiary=None):
         """Fill the money release template with transaction data"""
         try:
             doc = Document(template_path)
@@ -966,21 +967,39 @@ class BankLetterProcessor:
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
                     paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
                 
-                # Replace custom release order if provided
-                if custom_release_order and '{{RELEASE_ORDER}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{RELEASE_ORDER}}', custom_release_order)
-                
-                # Also check runs
-                for run in paragraph.runs:
-                    if 'IDFC Bank' in run.text or 'IDFC First Bank' in run.text:
-                        run.text = run.text.replace('IDFC Bank', bank_name)
-                        run.text = run.text.replace('IDFC First Bank', bank_name)
-                    if custom_subject and '{{SUBJECT}}' in run.text:
-                        run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                    if custom_message and '{{MESSAGE}}' in run.text:
-                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
-                    if custom_release_order and '{{RELEASE_ORDER}}' in run.text:
-                        run.text = run.text.replace('{{RELEASE_ORDER}}', custom_release_order)
+                # Replace custom court order if provided (justified alignment)
+            if custom_court_order and '{{COURT_ORDER}}' in paragraph.text:
+                paragraph.text = paragraph.text.replace('{{COURT_ORDER}}', custom_court_order)
+                # Set paragraph alignment to justified
+                from docx.enum.text import WD_ALIGN_PARAGRAPH
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            
+            # Replace custom beneficiary if provided (left alignment)
+            if custom_beneficiary and '{{BENEFICIARY}}' in paragraph.text:
+                paragraph.text = paragraph.text.replace('{{BENEFICIARY}}', custom_beneficiary)
+                # Set paragraph alignment to left
+                from docx.enum.text import WD_ALIGN_PARAGRAPH
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            
+            # Also check runs
+            for run in paragraph.runs:
+                if 'IDFC Bank' in run.text or 'IDFC First Bank' in run.text:
+                    run.text = run.text.replace('IDFC Bank', bank_name)
+                    run.text = run.text.replace('IDFC First Bank', bank_name)
+                if custom_subject and '{{SUBJECT}}' in run.text:
+                    run.text = run.text.replace('{{SUBJECT}}', custom_subject)
+                if custom_message and '{{MESSAGE}}' in run.text:
+                    run.text = run.text.replace('{{MESSAGE}}', custom_message)
+                if custom_court_order and '{{COURT_ORDER}}' in run.text:
+                    run.text = run.text.replace('{{COURT_ORDER}}', custom_court_order)
+                    # Set paragraph alignment to justified
+                    from docx.enum.text import WD_ALIGN_PARAGRAPH
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                if custom_beneficiary and '{{BENEFICIARY}}' in run.text:
+                    run.text = run.text.replace('{{BENEFICIARY}}', custom_beneficiary)
+                    # Set paragraph alignment to left
+                    from docx.enum.text import WD_ALIGN_PARAGRAPH
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
             
             # Find and populate the table
             if doc.tables:
