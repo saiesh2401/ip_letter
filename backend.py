@@ -889,8 +889,33 @@ class BankLetterProcessor:
                     row = table.rows[i]
                     row._element.getparent().remove(row._element)
                 
-                # Add transaction rows
-                for idx, txn in enumerate(transactions, 1):
+                # Deduplicate transactions by Account No, keeping the one with lowest layer
+                unique_transactions = {}
+                for txn in transactions:
+                    account_no = txn.get('Account No', '')
+                    if pd.notna(account_no):
+                        # Convert to string for consistent comparison
+                        acc_key = str(int(account_no)) if isinstance(account_no, (int, float)) else str(account_no)
+                        
+                        # If this account hasn't been seen, or has a lower layer, keep it
+                        if acc_key not in unique_transactions:
+                            unique_transactions[acc_key] = txn
+                        else:
+                            # Compare layers - keep the one with lower layer number
+                            existing_layer = unique_transactions[acc_key].get('Layer', float('inf'))
+                            current_layer = txn.get('Layer', float('inf'))
+                            
+                            # Handle NaN values
+                            if pd.isna(existing_layer):
+                                existing_layer = float('inf')
+                            if pd.isna(current_layer):
+                                current_layer = float('inf')
+                            
+                            if current_layer < existing_layer:
+                                unique_transactions[acc_key] = txn
+                
+                # Add unique transaction rows
+                for idx, txn in enumerate(unique_transactions.values(), 1):
                     row = table.add_row()
                     cells = row.cells
                     
