@@ -968,38 +968,38 @@ class BankLetterProcessor:
                     paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
                 
                 # Replace custom court order if provided (justified alignment)
-            if custom_court_order and '{{COURT_ORDER}}' in paragraph.text:
-                paragraph.text = paragraph.text.replace('{{COURT_ORDER}}', custom_court_order)
-                # Set paragraph alignment to justified
-                from docx.enum.text import WD_ALIGN_PARAGRAPH
-                paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-            
-            # Replace custom beneficiary if provided (left alignment)
-            if custom_beneficiary and '{{BENEFICIARY}}' in paragraph.text:
-                paragraph.text = paragraph.text.replace('{{BENEFICIARY}}', custom_beneficiary)
-                # Set paragraph alignment to left
-                from docx.enum.text import WD_ALIGN_PARAGRAPH
-                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            
-            # Also check runs
-            for run in paragraph.runs:
-                if 'IDFC Bank' in run.text or 'IDFC First Bank' in run.text:
-                    run.text = run.text.replace('IDFC Bank', bank_name)
-                    run.text = run.text.replace('IDFC First Bank', bank_name)
-                if custom_subject and '{{SUBJECT}}' in run.text:
-                    run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                if custom_message and '{{MESSAGE}}' in run.text:
-                    run.text = run.text.replace('{{MESSAGE}}', custom_message)
-                if custom_court_order and '{{COURT_ORDER}}' in run.text:
-                    run.text = run.text.replace('{{COURT_ORDER}}', custom_court_order)
+                if custom_court_order and '{{COURT_ORDER}}' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('{{COURT_ORDER}}', custom_court_order)
                     # Set paragraph alignment to justified
                     from docx.enum.text import WD_ALIGN_PARAGRAPH
                     paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-                if custom_beneficiary and '{{BENEFICIARY}}' in run.text:
-                    run.text = run.text.replace('{{BENEFICIARY}}', custom_beneficiary)
+                
+                # Replace custom beneficiary if provided (left alignment)
+                if custom_beneficiary and '{{BENEFICIARY}}' in paragraph.text:
+                    paragraph.text = paragraph.text.replace('{{BENEFICIARY}}', custom_beneficiary)
                     # Set paragraph alignment to left
                     from docx.enum.text import WD_ALIGN_PARAGRAPH
                     paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                
+                # Also check runs
+                for run in paragraph.runs:
+                    if 'IDFC Bank' in run.text or 'IDFC First Bank' in run.text:
+                        run.text = run.text.replace('IDFC Bank', bank_name)
+                        run.text = run.text.replace('IDFC First Bank', bank_name)
+                    if custom_subject and '{{SUBJECT}}' in run.text:
+                        run.text = run.text.replace('{{SUBJECT}}', custom_subject)
+                    if custom_message and '{{MESSAGE}}' in run.text:
+                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
+                    if custom_court_order and '{{COURT_ORDER}}' in run.text:
+                        run.text = run.text.replace('{{COURT_ORDER}}', custom_court_order)
+                        # Set paragraph alignment to justified
+                        from docx.enum.text import WD_ALIGN_PARAGRAPH
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                    if custom_beneficiary and '{{BENEFICIARY}}' in run.text:
+                        run.text = run.text.replace('{{BENEFICIARY}}', custom_beneficiary)
+                        # Set paragraph alignment to left
+                        from docx.enum.text import WD_ALIGN_PARAGRAPH
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
             
             # Find and populate the table
             if doc.tables:
