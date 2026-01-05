@@ -12,4 +12,5 @@ requests>=2.31.0
 py7zr>=1.0.0
 python-docx>=0.8.11
 beautifulsoup4>=4.9.0
+lxml>=4.9.0
 ipwhois>=1.2.0
