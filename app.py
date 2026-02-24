@@ -1100,3 +1100,80 @@ Branch : Rajouri Garden, New Delhi"""
                                             )
                                 
                                 st.write("---")
+                
+                # ---- Layerwise Flow Diagram ----
+                if process_sheet1 and 'Money Transfer to' in sheets and not sheets['Money Transfer to'].empty:
+                    st.write("---")
+                    st.subheader("📊 Layerwise Transaction Flow")
+                    st.caption("Interactive visualization of money tracking across layers")
+                    
+                    try:
+                        import json
+                        import streamlit.components.v1 as components
+                        import pandas as pd # Added import for pandas
+                        import os # Added import for os
+                        
+                        df_mt = sheets['Money Transfer to']
+                        txns = []
+                        df_clean = df_mt.dropna(subset=['Account No', 'Layer'])
+                        
+                        for idx, row in df_clean.iterrows():
+                            acc = row.get('Account No', '')
+                            if pd.isna(acc) or not str(acc).strip(): continue
+                            acc_str = str(int(acc)) if isinstance(acc, (int, float)) else str(acc)
+                            
+                            bank = row.get('Bank/FIs', '')
+                            if pd.isna(bank) or not str(bank).strip():
+                                bank = str(row.get('Action Taken By bank', 'Unknown'))
+                            else:
+                                bank = str(bank)
+                                
+                            layer = row.get('Layer', 1)
+                            try:
+                                layer = int(layer)
+                            except ValueError:
+                                continue
+                                
+                            amt = row.get('Transaction Amount', getattr(row, 'Disputed Amount', 0))
+                            if pd.isna(amt): amt = 0
+                                
+                            date = row.get('Transaction Date', '')
+                            if pd.isna(date): date = ''
+                            else: date = str(date)
+                            
+                            txns.append({
+                                'id': int(idx),
+                                'layer': layer,
+                                'bank': bank,
+                                'amount': float(amt) if amt else 0.0,
+                                'account': acc_str,
+                                'date': date,
+                                'targetLayer': None
+                            })
+                            
+                        # Add simplistic visual linking between available layers
+                        for t in txns:
+                            has_next_layer = any(x['layer'] == t['layer'] + 1 for x in txns)
+                            if has_next_layer:
+                                t['targetLayer'] = t['layer'] + 1
+                                
+                        diagram_path = "bank_diagram/embedded_diagram.html"
+                        if os.path.exists(diagram_path):
+                            with open(diagram_path, 'r', encoding='utf-8') as f:
+                                html_content = f.read()
+                                
+                            json_data = json.dumps(txns)
+                            # Give the diagram engine a second to initialize before loading data
+                            script_injection = f"<script>window.addEventListener('load', function() {{ setTimeout(() => window.loadTransactionData({json_data}), 500); }});</script>"
+                            
+                            if "</body>" in html_content:
+                                html_content = html_content.replace("</body>", f"{script_injection}\n</body>")
+                            else:
+                                html_content += script_injection
+                                
+                            # Render the HTML block directly into Streamlit
+                            components.html(html_content, height=850, scrolling=True)
+                        else:
+                            st.warning("Visualization template not found in deployment.")
+                    except Exception as e:
+                        st.error(f"Error rendering diagram: {e}")
