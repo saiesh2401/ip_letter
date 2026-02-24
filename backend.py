@@ -701,7 +701,12 @@ class ISPProcessor:
                      cells[1].text = ip
                      cells[2].text = from_dt.strftime(fmt_combined)
                      cells[3].text = to_dt.strftime(fmt_combined)
-                
+                elif len(cells) == 3:
+                     # 3 column table: IP, From Date Time, To Date Time
+                     fmt_space = f"{d_fmt} {t_fmt}"
+                     cells[0].text = ip
+                     cells[1].text = from_dt.strftime(fmt_space)
+                     cells[2].text = to_dt.strftime(fmt_space)
                 # Apply border formatting from header to each cell
                 for idx, cell in enumerate(cells):
                     if idx < len(header_cell_borders) and header_cell_borders[idx] is not None:
