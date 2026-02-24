@@ -1113,6 +1113,9 @@ class BankLetterProcessor:
                         run = paragraph.add_run(custom_beneficiary)
                         run.bold = True
                         paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                        # Reset any inherited indentation
+                        paragraph.paragraph_format.left_indent = 0
+                        paragraph.paragraph_format.first_line_indent = 0
                 else:
                     if custom_court_order and '{{COURT_ORDER}}' in paragraph.text:
                         paragraph.text = paragraph.text.replace('{{COURT_ORDER}}', custom_court_order)
@@ -1123,6 +1126,9 @@ class BankLetterProcessor:
                         run = paragraph.add_run(custom_beneficiary)
                         run.bold = True
                         paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                        # Reset any inherited indentation
+                        paragraph.paragraph_format.left_indent = 0
+                        paragraph.paragraph_format.first_line_indent = 0
                 
                 # Also check runs for other placeholders
                 for run in paragraph.runs:
