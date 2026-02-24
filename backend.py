@@ -1098,7 +1098,16 @@ class BankLetterProcessor:
                 
                 # Replace custom message if provided
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
+                    # Clear original paragraph text to remove placeholder without breaking XML
+                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', '')
+                    
+                    # Split message into lines and insert as new paragraphs with 0 spacing
+                    lines = custom_message.split('\n')
+                    for line in lines:
+                        if not line.strip(): continue
+                        new_p = paragraph.insert_paragraph_before(line)
+                        new_p.paragraph_format.space_before = Pt(0)
+                        new_p.paragraph_format.space_after = Pt(0)
                 
                 # Also check for runs within paragraphs for better replacement
                 for run in paragraph.runs:
@@ -1106,8 +1115,7 @@ class BankLetterProcessor:
                         run.text = run.text.replace('IDFC First Bank', bank_name)
                     if custom_subject and '{{SUBJECT}}' in run.text:
                         run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                    if custom_message and '{{MESSAGE}}' in run.text:
-                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
+
             
             # Find and populate the table
             if doc.tables:
@@ -1193,7 +1201,16 @@ class BankLetterProcessor:
                 
                 # Replace custom message if provided
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
+                    # Clear original paragraph text to remove placeholder without breaking XML
+                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', '')
+                    
+                    # Split message into lines and insert as new paragraphs with 0 spacing
+                    lines = custom_message.split('\n')
+                    for line in lines:
+                        if not line.strip(): continue
+                        new_p = paragraph.insert_paragraph_before(line)
+                        new_p.paragraph_format.space_before = Pt(0)
+                        new_p.paragraph_format.space_after = Pt(0)
                 
                 from docx.enum.text import WD_ALIGN_PARAGRAPH
                 
@@ -1232,8 +1249,7 @@ class BankLetterProcessor:
                         run.text = run.text.replace('IDFC First Bank', bank_name)
                     if custom_subject and '{{SUBJECT}}' in run.text:
                         run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                    if custom_message and '{{MESSAGE}}' in run.text:
-                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
+
             
             # Find and populate the table
             if doc.tables:
@@ -1361,7 +1377,16 @@ class BankLetterProcessor:
                 
                 # Replace custom message if provided
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
+                    # Clear original paragraph text to remove placeholder without breaking XML
+                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', '')
+                    
+                    # Split message into lines and insert as new paragraphs with 0 spacing
+                    lines = custom_message.split('\n')
+                    for line in lines:
+                        if not line.strip(): continue
+                        new_p = paragraph.insert_paragraph_before(line)
+                        new_p.paragraph_format.space_before = Pt(0)
+                        new_p.paragraph_format.space_after = Pt(0)
                 
                 # Also check runs
                 for run in paragraph.runs:
@@ -1369,8 +1394,7 @@ class BankLetterProcessor:
                         run.text = run.text.replace('Bandhan Bank', bank_name)
                     if custom_subject and '{{SUBJECT}}' in run.text:
                         run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                    if custom_message and '{{MESSAGE}}' in run.text:
-                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
+
             
             # Find and populate the table
             if doc.tables:
@@ -1440,7 +1464,16 @@ class BankLetterProcessor:
                 
                 # Replace custom message if provided
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
+                    # Clear original paragraph text to remove placeholder without breaking XML
+                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', '')
+                    
+                    # Split message into lines and insert as new paragraphs with 0 spacing
+                    lines = custom_message.split('\n')
+                    for line in lines:
+                        if not line.strip(): continue
+                        new_p = paragraph.insert_paragraph_before(line)
+                        new_p.paragraph_format.space_before = Pt(0)
+                        new_p.paragraph_format.space_after = Pt(0)
                 
                 # Also check runs
                 for run in paragraph.runs:
@@ -1448,8 +1481,7 @@ class BankLetterProcessor:
                         run.text = run.text.replace('Punjab National Bank', bank_name)
                     if custom_subject and '{{SUBJECT}}' in run.text:
                         run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                    if custom_message and '{{MESSAGE}}' in run.text:
-                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
+
             
             # Find and populate the table
             if doc.tables:
@@ -1574,7 +1606,16 @@ class BankLetterProcessor:
                 
                 # Replace custom message if provided
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
+                    # Clear original paragraph text to remove placeholder without breaking XML
+                    paragraph.text = paragraph.text.replace('{{MESSAGE}}', '')
+                    
+                    # Split message into lines and insert as new paragraphs with 0 spacing
+                    lines = custom_message.split('\n')
+                    for line in lines:
+                        if not line.strip(): continue
+                        new_p = paragraph.insert_paragraph_before(line)
+                        new_p.paragraph_format.space_before = Pt(0)
+                        new_p.paragraph_format.space_after = Pt(0)
                 
                 # Also check runs
                 for run in paragraph.runs:
@@ -1582,8 +1623,7 @@ class BankLetterProcessor:
                         run.text = run.text.replace('Punjab National Bank', bank_name)
                     if custom_subject and '{{SUBJECT}}' in run.text:
                         run.text = run.text.replace('{{SUBJECT}}', custom_subject)
-                    if custom_message and '{{MESSAGE}}' in run.text:
-                        run.text = run.text.replace('{{MESSAGE}}', custom_message)
+
             
             # Find and populate the table
             if doc.tables:
