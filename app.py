@@ -1085,11 +1085,17 @@ Branch : Rajouri Garden, New Delhi"""
                                     if os.path.exists(file_info['path']):
                                         with open(file_info['path'], "rb") as f:
                                             file_name = os.path.basename(file_info['path'])
+                                            
+                                            if file_name.endswith('.pdf'):
+                                                mime_type = "application/pdf"
+                                            else:
+                                                mime_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                                
                                             st.download_button(
                                                 label="📥 Download",
                                                 data=f,
                                                 file_name=file_name,
-                                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                                mime=mime_type,
                                                 key=f"dl_bank_{idx}_{file_name}"
                                             )
                                 

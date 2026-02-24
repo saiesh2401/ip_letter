@@ -812,6 +812,52 @@ class BankLetterProcessor:
         name = re.sub(r'[^\w\s-]', '', name)
         name = re.sub(r'[\s]+', '_', name)
         return name[:100]  # Limit length
+        
+    def _convert_to_pdf(self, docx_path, output_dir):
+        """
+        Convert a DOCX file to PDF using LibreOffice in headless mode.
+        Returns True if successful, False otherwise.
+        """
+        try:
+            import subprocess
+            import platform
+            
+            # Determine correct soffice command based on OS
+            sys_os = platform.system()
+            if sys_os == 'Darwin':  # macOS
+                soffice_cmd = '/Applications/LibreOffice.app/Contents/MacOS/soffice'
+            elif sys_os == 'Windows':
+                # Typical windows paths
+                soffice_cmd_options = [
+                    r"C:\Program Files\LibreOffice\program\soffice.exe",
+                    r"C:\Program Files (x86)\LibreOffice\program\soffice.exe"
+                ]
+                soffice_cmd = 'soffice' # fallback
+                for cmd in soffice_cmd_options:
+                    if os.path.exists(cmd):
+                        soffice_cmd = cmd
+                        break
+            else: # Linux / Streamlit Cloud
+                soffice_cmd = 'libreoffice'
+                
+            # Attempt to run conversion
+            # --headless --convert-to pdf --outdir <dir> <file>
+            result = subprocess.run([
+                soffice_cmd, 
+                '--headless', 
+                '--convert-to', 'pdf', 
+                '--outdir', output_dir, 
+                docx_path
+            ], capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                return True
+            else:
+                print(f"PDF Conversion failed: {result.stderr}")
+                return False
+        except Exception as e:
+            print(f"Error during PDF conversion: {e}")
+            return False
     
     def generate_layerwise_letters(self, df, num_layers, output_subdir="Sheet1_MoneyTransfer", custom_subject=None, custom_message=None):
         """
@@ -855,12 +901,23 @@ class BankLetterProcessor:
             )
             
             if success:
+                # Add DOCX
                 generated_files.append({
                     'path': output_path,
                     'bank': bank_name,
                     'count': len(transactions),
                     'type': 'Money Transfer'
                 })
+                
+                # Convert to PDF and add
+                pdf_path = output_path.replace('.docx', '.pdf')
+                if self._convert_to_pdf(output_path, output_dir) and os.path.exists(pdf_path):
+                    generated_files.append({
+                        'path': pdf_path,
+                        'bank': f"{bank_name} (PDF)",
+                        'count': len(transactions),
+                        'type': 'Money Transfer'
+                    })
         
         return generated_files
     
@@ -897,12 +954,23 @@ class BankLetterProcessor:
             )
             
             if success:
+                # Add DOCX
                 generated_files.append({
                     'path': output_path,
                     'bank': bank_name,
                     'count': len(transactions),
                     'type': 'Transaction On Hold'
                 })
+                
+                # Convert to PDF and add
+                pdf_path = output_path.replace('.docx', '.pdf')
+                if self._convert_to_pdf(output_path, output_dir) and os.path.exists(pdf_path):
+                    generated_files.append({
+                        'path': pdf_path,
+                        'bank': f"{bank_name} (PDF)",
+                        'count': len(transactions),
+                        'type': 'Transaction On Hold'
+                    })
         
         return generated_files
     
@@ -937,12 +1005,23 @@ class BankLetterProcessor:
             )
             
             if success:
+                # Add DOCX
                 generated_files.append({
                     'path': output_path,
                     'bank': bank_name,
                     'count': len(transactions),
                     'type': 'ATM Withdrawal'
                 })
+                
+                # Convert to PDF and add
+                pdf_path = output_path.replace('.docx', '.pdf')
+                if self._convert_to_pdf(output_path, output_dir) and os.path.exists(pdf_path):
+                    generated_files.append({
+                        'path': pdf_path,
+                        'bank': f"{bank_name} (PDF)",
+                        'count': len(transactions),
+                        'type': 'ATM Withdrawal'
+                    })
         
         return generated_files
     
@@ -977,12 +1056,23 @@ class BankLetterProcessor:
             )
             
             if success:
+                # Add DOCX
                 generated_files.append({
                     'path': output_path,
                     'bank': bank_name,
                     'count': len(transactions),
                     'type': 'Cheque Withdrawal'
                 })
+                
+                # Convert to PDF and add
+                pdf_path = output_path.replace('.docx', '.pdf')
+                if self._convert_to_pdf(output_path, output_dir) and os.path.exists(pdf_path):
+                    generated_files.append({
+                        'path': pdf_path,
+                        'bank': f"{bank_name} (PDF)",
+                        'count': len(transactions),
+                        'type': 'Cheque Withdrawal'
+                    })
         
         return generated_files
     
@@ -1442,12 +1532,23 @@ class BankLetterProcessor:
             )
             
             if success:
+                # Add DOCX
                 generated_files.append({
                     'path': output_path,
                     'bank': bank_name,
                     'count': len(transactions),
                     'type': 'AEPS Withdrawal'
                 })
+                
+                # Convert to PDF and add
+                pdf_path = output_path.replace('.docx', '.pdf')
+                if self._convert_to_pdf(output_path, output_dir) and os.path.exists(pdf_path):
+                    generated_files.append({
+                        'path': pdf_path,
+                        'bank': f"{bank_name} (PDF)",
+                        'count': len(transactions),
+                        'type': 'AEPS Withdrawal'
+                    })
         
         return generated_files
     
