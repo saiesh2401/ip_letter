@@ -1100,21 +1100,31 @@ class BankLetterProcessor:
                 if custom_message and '{{MESSAGE}}' in paragraph.text:
                     paragraph.text = paragraph.text.replace('{{MESSAGE}}', custom_message)
                 
-                # Replace custom court order if provided (justified alignment)
-                if custom_court_order and '{{COURT_ORDER}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{COURT_ORDER}}', custom_court_order)
-                    # Set paragraph alignment to justified
-                    from docx.enum.text import WD_ALIGN_PARAGRAPH
-                    paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                from docx.enum.text import WD_ALIGN_PARAGRAPH
                 
-                # Replace custom beneficiary if provided (left alignment)
-                if custom_beneficiary and '{{BENEFICIARY}}' in paragraph.text:
-                    paragraph.text = paragraph.text.replace('{{BENEFICIARY}}', custom_beneficiary)
-                    # Set paragraph alignment to left
-                    from docx.enum.text import WD_ALIGN_PARAGRAPH
-                    paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                # Handle COURT_ORDER and BENEFICIARY specially since they might be in the same paragraph
+                if '{{COURT_ORDER}}' in paragraph.text and '{{BENEFICIARY}}' in paragraph.text:
+                    if custom_court_order:
+                        p_court = paragraph.insert_paragraph_before(custom_court_order)
+                        p_court.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                    
+                    paragraph.text = ''
+                    if custom_beneficiary:
+                        run = paragraph.add_run(custom_beneficiary)
+                        run.bold = True
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                else:
+                    if custom_court_order and '{{COURT_ORDER}}' in paragraph.text:
+                        paragraph.text = paragraph.text.replace('{{COURT_ORDER}}', custom_court_order)
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                    
+                    if custom_beneficiary and '{{BENEFICIARY}}' in paragraph.text:
+                        paragraph.text = ''
+                        run = paragraph.add_run(custom_beneficiary)
+                        run.bold = True
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
                 
-                # Also check runs
+                # Also check runs for other placeholders
                 for run in paragraph.runs:
                     if 'IDFC Bank' in run.text or 'IDFC First Bank' in run.text:
                         run.text = run.text.replace('IDFC Bank', bank_name)
@@ -1123,16 +1133,6 @@ class BankLetterProcessor:
                         run.text = run.text.replace('{{SUBJECT}}', custom_subject)
                     if custom_message and '{{MESSAGE}}' in run.text:
                         run.text = run.text.replace('{{MESSAGE}}', custom_message)
-                    if custom_court_order and '{{COURT_ORDER}}' in run.text:
-                        run.text = run.text.replace('{{COURT_ORDER}}', custom_court_order)
-                        # Set paragraph alignment to justified
-                        from docx.enum.text import WD_ALIGN_PARAGRAPH
-                        paragraph.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-                    if custom_beneficiary and '{{BENEFICIARY}}' in run.text:
-                        run.text = run.text.replace('{{BENEFICIARY}}', custom_beneficiary)
-                        # Set paragraph alignment to left
-                        from docx.enum.text import WD_ALIGN_PARAGRAPH
-                        paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
             
             # Find and populate the table
             if doc.tables:
@@ -1211,6 +1211,28 @@ class BankLetterProcessor:
             # Apply borders to the table
             if doc.tables:
                 self.set_table_borders(doc.tables[0])
+                
+                # Remove extra empty paragraphs after the table to reduce space
+                table_element = doc.tables[0]._element
+                parent = table_element.getparent()
+                found_table = False
+                elements_to_remove = []
+                for child in parent:
+                    if child == table_element:
+                        found_table = True
+                        continue
+                    if found_table and child.tag.endswith('p'):
+                        texts = child.xpath('.//w:t/text()')
+                        combined_text = "".join(texts).strip()
+                        if not combined_text:
+                            elements_to_remove.append(child)
+                        else:
+                            break
+                            
+                # Keep one empty paragraph for a single newline buffer
+                if len(elements_to_remove) > 1:
+                    for child in elements_to_remove[:-1]:
+                        parent.remove(child)
             
             doc.save(output_path)
             return True
