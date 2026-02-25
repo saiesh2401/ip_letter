@@ -6,6 +6,7 @@ from ipwhois import IPWhois
 import openpyxl
 from docx import Document
 from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from collections import defaultdict
@@ -1108,6 +1109,7 @@ class BankLetterProcessor:
                         new_p = paragraph.insert_paragraph_before(line)
                         new_p.paragraph_format.space_before = Pt(0)
                         new_p.paragraph_format.space_after = Pt(0)
+                        new_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                 
                 # Also check for runs within paragraphs for better replacement
                 for run in paragraph.runs:
@@ -1211,6 +1213,7 @@ class BankLetterProcessor:
                         new_p = paragraph.insert_paragraph_before(line)
                         new_p.paragraph_format.space_before = Pt(0)
                         new_p.paragraph_format.space_after = Pt(0)
+                        new_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                 
                 from docx.enum.text import WD_ALIGN_PARAGRAPH
                 
@@ -1387,6 +1390,7 @@ class BankLetterProcessor:
                         new_p = paragraph.insert_paragraph_before(line)
                         new_p.paragraph_format.space_before = Pt(0)
                         new_p.paragraph_format.space_after = Pt(0)
+                        new_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                 
                 # Also check runs
                 for run in paragraph.runs:
@@ -1474,6 +1478,7 @@ class BankLetterProcessor:
                         new_p = paragraph.insert_paragraph_before(line)
                         new_p.paragraph_format.space_before = Pt(0)
                         new_p.paragraph_format.space_after = Pt(0)
+                        new_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                 
                 # Also check runs
                 for run in paragraph.runs:
@@ -1616,6 +1621,7 @@ class BankLetterProcessor:
                         new_p = paragraph.insert_paragraph_before(line)
                         new_p.paragraph_format.space_before = Pt(0)
                         new_p.paragraph_format.space_after = Pt(0)
+                        new_p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                 
                 # Also check runs
                 for run in paragraph.runs:
