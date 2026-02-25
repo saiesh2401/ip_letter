@@ -461,7 +461,7 @@ with reply_tab:
                         
                         # Show summary table with relevant columns
                         # Support both old format (DSL_User_ID) and new format (MSISDN_userID)
-                        
+                        display_df = hits_df.drop(columns=["CSV_Path"], errors="ignore")
                         if 'MSISDN_userID' in display_df.columns:
                             # New IPDR format - show key columns
                             key_cols = ['Source_File', 'MSISDN_userID', 'IMEI', 'Source_Public_IPv6', 'Source_Public_IPv4',
