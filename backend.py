@@ -110,28 +110,27 @@ class ISPProcessor:
                                                 # Standard header is usually at row 6 (0-indexed)
                                                 # We can try to read with header=6
                                                 try:
-                                                    # Robust Header Finding
+                                                    # Robust Header Finding - support both old and new Airtel CSV formats
                                                     with open(csv_full_path, "r", encoding="latin1") as f_in:
                                                         lines = f_in.readlines()
                                                     
                                                     header_idx = -1
-                                                    for i, line in enumerate(lines[:20]): # Scan first 20 lines
-                                                        if "DSL_User_ID" in line:
+                                                    for i, line in enumerate(lines[:20]):
+                                                        if "DSL_User_ID" in line or "MSISDN_userID" in line:
                                                             header_idx = i
                                                             break
                                                             
                                                     if header_idx != -1:
-                                                        # Use python engine for robust parsing of quotes/dates
-                                                        # Read all columns as strings to prevent Arrow serialization errors
                                                         try:
                                                             df = pd.read_csv(csv_full_path, skiprows=header_idx, header=0, encoding='latin1', quotechar="'", skipinitialspace=True, on_bad_lines='skip', engine='python', dtype=str)
                                                         except:
-                                                            # Fallback for older pandas or different env
                                                             df = pd.read_csv(csv_full_path, skiprows=header_idx, header=0, encoding='latin1', quotechar="'", skipinitialspace=True, engine='python', dtype=str)
 
-                                                        # Filter footer artifacts
+                                                        # Filter footer artifacts for both formats
                                                         if 'DSL_User_ID' in df.columns:
                                                             df = df[~df['DSL_User_ID'].astype(str).str.contains("System generated", case=False, na=False)]
+                                                        elif 'MSISDN_userID' in df.columns:
+                                                            df = df[~df['MSISDN_userID'].astype(str).str.contains("System generated|This is System", case=False, na=False)]
                                                             
                                                         if not df.empty:
                                                             df['Source_File'] = f
