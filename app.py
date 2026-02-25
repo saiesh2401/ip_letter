@@ -459,26 +459,48 @@ with reply_tab:
                         total_rows = len(hits_df)
                         st.info(f"📊 **Total Records Found:** {total_rows:,} rows")
                         
-                        # Prepare display dataframe
-                        display_df = hits_df.drop(columns=["CSV_Path"], errors="ignore")
+                        # Show summary table with relevant columns
+                        # Support both old format (DSL_User_ID) and new format (MSISDN_userID)
+                        
+                        if 'MSISDN_userID' in display_df.columns:
+                            # New IPDR format - show key columns
+                            key_cols = ['Source_File', 'MSISDN_userID', 'IMEI', 'Source_Public_IPv6', 'Source_Public_IPv4',
+                                       'Event_Start_Time', 'Session_Start_Time', 'Session_End_Time',
+                                       'CGI Latitude', 'CGI Longitude', 'CGI', '2g/4g/5g',
+                                       'Access_Point_Name', 'Roaming_Circle', 'Home_Circle']
+                            key_cols = [c for c in key_cols if c in display_df.columns]
+                            summary_df = display_df[key_cols].rename(columns={
+                                'Source_File': 'IP File',
+                                'MSISDN_userID': 'Phone No.',
+                                'Source_Public_IPv6': 'IPv6',
+                                'Source_Public_IPv4': 'IPv4',
+                                'Event_Start_Time': 'Event Time',
+                                'Session_Start_Time': 'Session Start',
+                                'Session_End_Time': 'Session End',
+                                'CGI Latitude': 'Lat',
+                                'CGI Longitude': 'Long',
+                                '2g/4g/5g': 'Network',
+                                'Access_Point_Name': 'APN',
+                                'Roaming_Circle': 'Circle',
+                                'Home_Circle': 'Home',
+                            })
+                        else:
+                            # Old format
+                            summary_df = display_df
                         
                         # Use pagination for large datasets
                         if total_rows > 10000:
                             st.write("---")
                             st.subheader("📄 Paginated Data View")
-                            
-                            # Render pagination controls and get current page
                             page_df, start_row, end_row, total, current_page, total_pages = render_pagination(
-                                display_df, 
+                                summary_df, 
                                 'airtel_page', 
                                 page_size=10000
                             )
-                            
-                            # Display current page
                             st.dataframe(page_df, width='stretch', height=500)
                         else:
                             # For small datasets, show all data
-                            st.dataframe(display_df, width='stretch', height=500)
+                            st.dataframe(summary_df, width='stretch', height=500)
                         
                         # Evidence Downloads
                         st.subheader("📂 Raw Evidence Files")
@@ -509,7 +531,7 @@ with reply_tab:
                                             
                                             header_idx = -1
                                             for i, line in enumerate(lines):
-                                                if "DSL_User_ID" in line:
+                                                if "DSL_User_ID" in line or "MSISDN_userID" in line:
                                                     header_idx = i
                                                     break
                                             
@@ -519,9 +541,10 @@ with reply_tab:
                                                 except:
                                                     sub_df = pd.read_csv(fpath, skiprows=header_idx, header=0, encoding='latin1', quotechar="'", skipinitialspace=True, engine='python')
                                                 
-                                                # Filter footer
+                                                # Filter footer for both formats
                                                 if 'DSL_User_ID' in sub_df.columns:
                                                     sub_df = sub_df[~sub_df['DSL_User_ID'].astype(str).str.contains("System generated", case=False, na=False)]
+                                                    sub_df = sub_df[~sub_df['MSISDN_userID'].astype(str).str.contains("System generated|This is System", case=False, na=False)]
                                                 st.dataframe(sub_df, width='stretch')
                                             else:
                                                 st.warning("No standard Airtel header found.")
